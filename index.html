@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rotem Ezra – Autonomous tidying robot</title>
+<meta name="description" content="Rotem Ezra, electrical engineer. Build log of an autonomous tracked robot with Jetson Orin Nano, ESP32, ROS2 and a 5-axis arm.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --page: #F3F2EC;        /* silkscreen white */
+    --ink: #17231D;
+    --muted: #4E5C54;
+    --mask: #1E4A37;        /* PCB soldermask green */
+    --copper: #A8642E;
+    --line: #CFD3C8;
+    --panel: #E8E8DF;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page: #0F1A15;
+      --ink: #E9ECE4;
+      --muted: #A3AFA6;
+      --mask: #2E6B50;
+      --copper: #D08A4E;
+      --line: #2A3A32;
+      --panel: #16241D;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0; background: var(--page); color: var(--ink);
+    font: 400 1.0625rem/1.6 "Barlow", "Helvetica Neue", Arial, sans-serif;
+  }
+  a { color: var(--copper); text-underline-offset: 3px; }
+  a:focus-visible { outline: 2px solid var(--copper); outline-offset: 3px; }
+  img { max-width: 100%; display: block; }
+  .wrap { max-width: 68rem; margin: 0 auto; padding: 0 1.5rem; }
+  h1, h2, h3 { font-family: "Barlow Condensed", "Arial Narrow", sans-serif; line-height: 1.05; margin: 0; }
+  h2 { font-size: 2.25rem; font-weight: 700; margin-bottom: 1.25rem; }
+  h3 { font-size: 1.4rem; font-weight: 700; }
+  p { max-width: 38rem; margin: 0 0 1rem; }
+  section { padding: 4.5rem 0; border-top: 1px solid var(--line); }
+
+  nav { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 0; gap: 1rem; flex-wrap: wrap; }
+  nav .name { font-family: "Barlow Condensed", sans-serif; font-weight: 700; font-size: 1.35rem; color: var(--ink); text-decoration: none; }
+  nav ul { list-style: none; display: flex; gap: 1.5rem; margin: 0; padding: 0; }
+  nav ul a { color: var(--muted); text-decoration: none; font-weight: 500; }
+  nav ul a:hover { color: var(--ink); }
+
+  .hero { padding: 3rem 0 4rem; }
+  .hero h1 { font-size: clamp(3rem, 9vw, 6.5rem); font-weight: 700; max-width: 14ch; letter-spacing: -0.01em; }
+  .hero .lede { font-size: 1.25rem; color: var(--muted); margin-top: 1.5rem; max-width: 36rem; }
+
+  /* Build progress as a track */
+  .track { margin-top: 3rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; }
+  .stage { padding: 1.25rem 1.25rem 0 0; border-top: 6px solid var(--line); position: relative; }
+  .stage.done { border-top-color: var(--mask); }
+  .stage.now { border-top-color: var(--copper); }
+  .stage .n { font-family: "Barlow Condensed", sans-serif; font-weight: 700; font-size: 1rem; color: var(--muted); }
+  .stage h3 { margin: 0.2rem 0 0.4rem; }
+  .stage p { font-size: 0.95rem; color: var(--muted); margin: 0; }
+  .stage .state { display: inline-block; margin-top: 0.6rem; font-weight: 600; font-size: 0.9rem; }
+  .done .state { color: var(--mask); }
+  .now .state { color: var(--copper); }
+
+  /* Architecture */
+  .arch { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
+  .diagram { background: var(--panel); border-radius: 6px; padding: 1.5rem; overflow-x: auto; }
+  .diagram svg { width: 100%; min-width: 420px; height: auto; }
+  .diagram text { font-family: "Barlow", sans-serif; fill: var(--ink); }
+  .diagram .box { fill: var(--page); stroke: var(--mask); stroke-width: 2; }
+  .diagram .box.brain { stroke: var(--copper); }
+  .diagram .wire { stroke: var(--muted); stroke-width: 1.6; fill: none; }
+  .diagram .lbl { font-size: 11px; fill: var(--muted); }
+  dl.spec { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 0.5rem 1.25rem; }
+  dl.spec dt { font-weight: 600; }
+  dl.spec dd { margin: 0; color: var(--muted); }
+
+  /* Media */
+  .media { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1.25rem; }
+  .slot { aspect-ratio: 4 / 3; background: var(--panel); border: 2px dashed var(--line); border-radius: 6px;
+          display: grid; place-items: center; color: var(--muted); text-align: center; padding: 1rem; font-size: 0.95rem; }
+  .slot img, .slot video { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
+  figcaption { font-size: 0.9rem; color: var(--muted); margin-top: 0.5rem; }
+  figure { margin: 0; }
+
+  .other { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; }
+  .tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.75rem 0 1rem; padding: 0; list-style: none; }
+  .tags li { font-size: 0.85rem; font-weight: 500; padding: 0.15rem 0.6rem; border: 1px solid var(--line); border-radius: 3px; color: var(--muted); }
+
+  footer { padding: 3rem 0 4rem; border-top: 1px solid var(--line); color: var(--muted); }
+  .contact { display: flex; flex-wrap: wrap; gap: 1.5rem; font-weight: 600; }
+
+  @media (max-width: 760px) {
+    .track { grid-template-columns: 1fr; }
+    .stage { padding-bottom: 1.25rem; }
+    .arch, .other { grid-template-columns: 1fr; gap: 2rem; }
+    nav ul { gap: 1rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="name" href="#">Rotem Ezra</a>
+    <ul>
+      <li><a href="#system">System</a></li>
+      <li><a href="#log">Build log</a></li>
+      <li><a href="#about">About</a></li>
+    </ul>
+  </nav>
+
+  <header class="hero">
+    <h1>A tracked robot that tidies a room by itself</h1>
+    <p class="lede">I’m building an autonomous ground robot that finds objects on the floor and puts them where they belong: socks to the laundry basket, toys to the toy box. Jetson Orin Nano for vision, ESP32 for motor control, ROS2 tying it together.</p>
+
+    <div class="track" aria-label="Project progress">
+      <div class="stage done">
+        <span class="n">Stage 1</span>
+        <h3>Drive platform</h3>
+        <p>TS100 metal tank chassis, encoder motors, ESP32 + L298N, wireless controller.</p>
+        <span class="state">Working</span>
+      </div>
+      <div class="stage now">
+        <span class="n">Stage 2</span>
+        <h3>Vision and autonomy</h3>
+        <p>IMX219 camera on the Jetson, object detection, ROS2 nodes, battery power.</p>
+        <span class="state">In progress</span>
+      </div>
+      <div class="stage">
+        <span class="n">Stage 3</span>
+        <h3>Arm and pick-up</h3>
+        <p>SO-101 5-axis arm, grasping detected objects and placing them by category.</p>
+        <span class="state">Planned</span>
+      </div>
+    </div>
+  </header>
+
+  <section id="system">
+    <h2>System architecture</h2>
+    <div class="arch">
+      <div class="diagram">
+        <svg viewBox="0 0 440 320" role="img" aria-label="Block diagram: camera into Jetson Orin Nano, Jetson to ESP32 over serial, ESP32 to L298N driver and two encoder motors, Jetson to SO-101 arm, 3S LiPo powering everything">
+          <rect class="box" x="20" y="20" width="110" height="46" rx="4"/>
+          <text x="75" y="48" text-anchor="middle" font-size="13">IMX219 camera</text>
+
+          <rect class="box brain" x="165" y="12" width="130" height="62" rx="4"/>
+          <text x="230" y="40" text-anchor="middle" font-size="14" font-weight="600">Jetson Orin Nano</text>
+          <text x="230" y="58" text-anchor="middle" class="lbl">ROS2 · detection</text>
+
+          <rect class="box" x="320" y="20" width="100" height="46" rx="4"/>
+          <text x="370" y="48" text-anchor="middle" font-size="13">SO-101 arm</text>
+
+          <rect class="box" x="165" y="130" width="130" height="50" rx="4"/>
+          <text x="230" y="160" text-anchor="middle" font-size="14" font-weight="600">ESP32</text>
+
+          <rect class="box" x="165" y="230" width="130" height="46" rx="4"/>
+          <text x="230" y="258" text-anchor="middle" font-size="13">L298N driver</text>
+
+          <rect class="box" x="20" y="230" width="110" height="46" rx="4"/>
+          <text x="75" y="252" text-anchor="middle" font-size="13">Left motor</text>
+          <text x="75" y="268" text-anchor="middle" class="lbl">+ encoder</text>
+
+          <rect class="box" x="320" y="230" width="100" height="46" rx="4"/>
+          <text x="370" y="252" text-anchor="middle" font-size="13">Right motor</text>
+          <text x="370" y="268" text-anchor="middle" class="lbl">+ encoder</text>
+
+          <rect class="box" x="20" y="130" width="110" height="50" rx="4"/>
+          <text x="75" y="160" text-anchor="middle" font-size="13">3S LiPo</text>
+
+          <path class="wire" d="M130 43 H165"/><text x="147" y="36" text-anchor="middle" class="lbl">CSI</text>
+          <path class="wire" d="M295 43 H320"/>
+          <path class="wire" d="M230 74 V130"/><text x="238" y="106" class="lbl">UART</text>
+          <path class="wire" d="M230 180 V230"/><text x="238" y="208" class="lbl">PWM</text>
+          <path class="wire" d="M165 253 H130"/>
+          <path class="wire" d="M295 253 H320"/>
+          <path class="wire" d="M75 230 V215 H180 V180" stroke-dasharray="4 3"/>
+          <path class="wire" d="M370 230 V215 H280 V180" stroke-dasharray="4 3"/>
+          <path class="wire" d="M130 155 H165" stroke="var(--copper)"/>
+          <text x="147" y="148" text-anchor="middle" class="lbl">power</text>
+        </svg>
+      </div>
+      <dl class="spec">
+        <dt>Compute</dt><dd>NVIDIA Jetson Orin Nano, developed headless over SSH</dd>
+        <dt>Middleware</dt><dd>ROS2</dd>
+        <dt>Vision</dt><dd>Sony IMX219 over CSI</dd>
+        <dt>Motor control</dt><dd>ESP32, L298N H-bridge, quadrature encoders</dd>
+        <dt>Chassis</dt><dd>TS100 metal tank, 2× 25 mm 9–12 V gear motors</dd>
+        <dt>Manipulator</dt><dd>SO-101 5-axis arm</dd>
+        <dt>Power</dt><dd>3S LiPo, fully untethered</dd>
+        <dt>Electronics</dt><dd>Custom PCB (in design)</dd>
+      </dl>
+    </div>
+  </section>
+
+  <section id="log">
+    <h2>Build log</h2>
+    <p>Photos and video from each stage. Newest first.</p>
+    <div class="media">
+      <figure>
+        <div class="slot">Add a photo: chassis with ESP32 and L298N wired up</div>
+        <figcaption>Stage 1: drive electronics, soldered and running.</figcaption>
+      </figure>
+      <figure>
+        <div class="slot">Add a short video: chassis driving under controller</div>
+        <figcaption>Stage 1: first drive test.</figcaption>
+      </figure>
+      <figure>
+        <div class="slot">Add a photo: IMX219 connected to the Jetson</div>
+        <figcaption>Stage 2: camera bring-up on the Jetson.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>Other work</h2>
+    <div class="other">
+      <div>
+        <h3>Tel Aviv shelter locator</h3>
+        <ul class="tags"><li>Python</li><li>LangChain</li><li>LLM agent</li></ul>
+        <p>An agent that finds the nearest public emergency shelter in Tel Aviv from a natural-language question.</p>
+        <a href="https://github.com/RotemEzra24/tlv-shelter">View on GitHub</a>
+      </div>
+      <div id="about">
+        <h3>About me</h3>
+        <ul class="tags"><li>Embedded</li><li>Robotics</li><li>Arduino / ESP32</li></ul>
+        <p>B.Sc. in Electrical Engineering, Afeka College of Engineering. I work mostly with ESP32 and Arduino and I’m looking for embedded and robotics roles. IDF reserve combat soldier; in regular service I was a platoon sergeant responsible for 30 soldiers.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="contact">
+      <a href="mailto:YOUR_EMAIL_HERE">Email</a>
+      <a href="https://www.linkedin.com/in/YOUR_LINKEDIN_HERE">LinkedIn</a>
+      <a href="https://github.com/RotemEzra24">GitHub</a>
+    </div>
+  </div>
+</footer>
+</body>
+</html>
