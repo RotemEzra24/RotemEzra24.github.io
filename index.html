@@ -154,20 +154,11 @@
   .stack { padding: 7rem 0; overflow: hidden; }
   .stack .head { margin-bottom: 2.5rem; }
   .stack-grid { display: grid; grid-template-columns: 7fr 5fr; gap: 3rem; align-items: center; }
-  .stack-visual { position: relative; height: 500px; }
-  .layer { position: absolute; left: 50%; top: 250px; width: 250px; height: 250px; margin-left: -125px;
-           transform: translateY(calc(var(--i) * -62px)); will-change: transform; }
-  .slab { width: 100%; height: 100%; border-radius: 56px; transform: rotateX(60deg) rotateZ(-45deg); box-sizing: border-box;
-          border: 1.5px solid rgba(255,255,255,0.22); box-shadow: 0 30px 60px rgba(0,0,0,0.55);
-          transition: border-color 500ms ease, box-shadow 500ms ease; }
-  .l0 .slab { background: linear-gradient(135deg, #3A3B3F 0%, #151618 100%); }
-  .l1 .slab { background: linear-gradient(135deg, #2F5A43 0%, #173025 100%); border-color: rgba(160,220,180,0.3); }
-  .l2 .slab { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.5); box-shadow: 0 30px 60px rgba(0,0,0,0.35), inset 0 0 0 6px rgba(214,178,110,0.18); }
-  .l3 .slab { background: linear-gradient(135deg, #2A2C31 0%, #111214 100%); }
-  .l4 .slab { background: transparent; border: 1.5px dashed rgba(255,255,255,0.45); box-shadow: none; }
-  .layer.active .slab { border-color: #8FB0FF; box-shadow: 0 0 0 4px rgba(143,176,255,0.22), 0 40px 80px rgba(0,0,0,0.6); }
-  .l4.active .slab { border-style: dashed; }
-  .stack-legend { position: absolute; left: 0; bottom: 0; display: flex; gap: 1.25rem; margin: 0; padding: 0; list-style: none; font-size: 0.85rem; color: var(--band-muted); }
+  .stack-visual { margin: 0; }
+  .stack-visual svg { width: 100%; height: auto; display: block; overflow: visible; }
+  .part { transition: filter 450ms ease; }
+  .stack.pinned .part.active { filter: drop-shadow(0 0 14px rgba(143,176,255,0.45)); }
+  .stack-legend { display: flex; gap: 1.25rem; margin: 1.5rem 0 0; padding: 0; list-style: none; font-size: 0.85rem; color: var(--band-muted); }
   .stack-legend li { display: flex; align-items: center; gap: 0.5rem; }
   .stack-legend i { width: 1.4rem; height: 0.85rem; border-radius: 3px; border: 1.5px solid rgba(255,255,255,0.6); }
   .stack-legend i.todo { border-style: dashed; }
@@ -259,9 +250,7 @@
 
   @media (max-width: 900px) {
     .stack-grid { grid-template-columns: 1fr; gap: 2rem; }
-    .stack-visual { height: 440px; max-width: 30rem; margin: 0 auto; width: 100%; }
-    .layer { top: 220px; width: 210px; height: 210px; margin-left: -105px; transform: translateY(calc(var(--i) * -52px)); }
-    .slab { border-radius: 46px; }
+    .stack-visual { max-width: 36rem; margin: 0 auto; width: 100%; }
   }
   @media (max-width: 820px) {
     html { scroll-padding-top: 56px; }
@@ -285,9 +274,6 @@
     .card { padding: 1.6rem; border-radius: 24px; min-height: 0; }
     .nav ul { gap: 0.9rem; }
     .nav ul a { font-size: 0.78rem; }
-    .stack-visual { height: 380px; }
-    .layer { top: 190px; width: 180px; height: 180px; margin-left: -90px; transform: translateY(calc(var(--i) * -44px)); }
-    .slab { border-radius: 40px; }
     .foot-grid { grid-template-columns: 1fr; }
   }
   @media (max-width: 380px) {
@@ -429,17 +415,75 @@
       <div class="head" data-reveal>
         <p class="eyebrow">Architecture</p>
         <h2 id="stack-title">Five layers. One build order.</h2>
-        <p class="intro">Each layer is a stage of the build, from the bottom up. Dashed means not built yet.</p>
+        <p class="intro">Scroll to build it: each layer is a stage of the build, from the bottom up. Dashed means not built yet.</p>
       </div>
       <div class="stack-grid">
-        <div class="stack-visual" role="img" aria-label="The robot's build as five stacked layers: tracked chassis, drive electronics, acrylic deck, Jetson and camera, and the planned SO-101 arm drawn dashed">
-          <div class="layer l0" style="--i:0"><div class="slab"></div></div>
-          <div class="layer l1" style="--i:1"><div class="slab"></div></div>
-          <div class="layer l2" style="--i:2"><div class="slab"></div></div>
-          <div class="layer l3" style="--i:3"><div class="slab"></div></div>
-          <div class="layer l4" style="--i:4"><div class="slab"></div></div>
+        <figure class="stack-visual">
+          <svg viewBox="0 0 640 420" role="img" aria-label="Side-view illustration of the robot built up in five layers: the tracked chassis with a gear motor at the rear, the drive electronics, the acrylic deck on brass standoffs, the Jetson with the camera at the front, and the planned SO-101 arm drawn dashed">
+            <defs>
+              <linearGradient id="silver" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E1E3E6"/><stop offset=".55" stop-color="#8C8F95"/><stop offset="1" stop-color="#C4C6CA"/></linearGradient>
+              <linearGradient id="brass" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#A37A33"/><stop offset=".5" stop-color="#E6C67E"/><stop offset="1" stop-color="#A37A33"/></linearGradient>
+            </defs>
+            <g class="part" data-part="0">
+              <rect x="70" y="300" width="460" height="96" rx="48" fill="#121315" stroke="#34353A" stroke-width="2"/>
+              <rect x="75" y="305" width="450" height="86" rx="43" fill="none" stroke="#2C2D31" stroke-width="6" stroke-dasharray="7 5"/>
+              <circle cx="120" cy="348" r="34" fill="#1E1F22" stroke="#3A3B40" stroke-width="2"/>
+              <circle cx="480" cy="348" r="34" fill="#1E1F22" stroke="#3A3B40" stroke-width="2"/>
+              <circle cx="200" cy="362" r="22" fill="#1E1F22" stroke="#3A3B40" stroke-width="2"/>
+              <circle cx="266" cy="362" r="22" fill="#1E1F22" stroke="#3A3B40" stroke-width="2"/>
+              <circle cx="332" cy="362" r="22" fill="#1E1F22" stroke="#3A3B40" stroke-width="2"/>
+              <circle cx="398" cy="362" r="22" fill="#1E1F22" stroke="#3A3B40" stroke-width="2"/>
+              <g fill="#9A9CA1"><circle cx="120" cy="348" r="7"/><circle cx="480" cy="348" r="7"/><circle cx="200" cy="362" r="5"/><circle cx="266" cy="362" r="5"/><circle cx="332" cy="362" r="5"/><circle cx="398" cy="362" r="5"/></g>
+              <rect x="90" y="286" width="420" height="22" fill="#1A1B1E" stroke="#2E2F33"/>
+              <rect x="80" y="276" width="500" height="10" rx="2" fill="#232428" stroke="#3A3B40"/>
+              <g fill="#0A0A0A"><circle cx="130" cy="281" r="2"/><circle cx="190" cy="281" r="2"/><circle cx="250" cy="281" r="2"/><circle cx="350" cy="281" r="2"/><circle cx="410" cy="281" r="2"/><circle cx="470" cy="281" r="2"/></g>
+              <rect x="18" y="322" width="86" height="30" rx="6" fill="url(#silver)"/>
+              <rect x="10" y="316" width="10" height="42" rx="2" fill="#1F6B45"/>
+              <rect x="3" y="330" width="7" height="13" rx="1" fill="#DCDDE0"/>
+            </g>
+            <g class="part" data-part="1">
+              <path d="M262 276 C 220 300, 120 296, 12 326" fill="none" stroke="#E05252" stroke-width="2.5"/>
+              <path d="M272 276 C 230 312, 130 312, 12 340" fill="none" stroke="#3FAE67" stroke-width="2.5"/>
+              <rect x="250" y="262" width="90" height="14" rx="1" fill="#C43A2F"/>
+              <rect x="254" y="250" width="26" height="12" rx="1" fill="#2D6FD6"/>
+              <rect x="290" y="222" width="42" height="40" fill="#151618"/>
+              <g stroke="#34353A" stroke-width="2"><path d="M296 224v36M303 224v36M310 224v36M317 224v36M324 224v36"/></g>
+              <rect x="360" y="264" width="140" height="12" rx="1" fill="#1F7A3E"/>
+              <rect x="362" y="252" width="136" height="12" rx="1" fill="#2EA05A"/>
+              <g fill="#1F7A3E"><rect x="368" y="255" width="6" height="6"/><rect x="380" y="255" width="6" height="6"/><rect x="392" y="255" width="6" height="6"/><rect x="470" y="255" width="6" height="6"/><rect x="482" y="255" width="6" height="6"/></g>
+              <rect x="405" y="238" width="55" height="14" rx="1" fill="#121315"/>
+              <rect x="458" y="241" width="10" height="8" rx="1" fill="#9A9CA1"/>
+              <path d="M412 252 C 384 226, 334 222, 318 250" fill="none" stroke="#E3B341" stroke-width="2.5"/>
+              <path d="M432 252 C 404 208, 300 206, 268 250" fill="none" stroke="#4A90E2" stroke-width="2.5"/>
+            </g>
+            <g class="part" data-part="2">
+              <rect x="172" y="176" width="7" height="100" fill="url(#brass)"/>
+              <rect x="442" y="176" width="7" height="100" fill="url(#brass)"/>
+              <rect x="150" y="168" width="322" height="8" rx="2" fill="rgba(255,255,255,0.16)" stroke="rgba(255,255,255,0.6)"/>
+            </g>
+            <g class="part" data-part="3">
+              <path d="M552 224 C 520 244, 470 206, 436 162" fill="none" stroke="#D9822B" stroke-width="4"/>
+              <rect x="175" y="150" width="262" height="18" rx="2" fill="#1B1C1F" stroke="#3A3B40"/>
+              <rect x="180" y="132" width="26" height="18" rx="1" fill="#9A9CA1"/>
+              <rect x="210" y="136" width="20" height="14" rx="1" fill="#9A9CA1"/>
+              <rect x="382" y="144" width="48" height="6" fill="#0E0F11"/>
+              <rect x="260" y="106" width="110" height="44" rx="3" fill="#2A2C30" stroke="#44464B"/>
+              <g stroke="#17181B" stroke-width="3"><path d="M270 112v32M279 112v32M288 112v32M297 112v32M306 112v32M315 112v32M324 112v32M333 112v32M342 112v32M351 112v32M360 112v32"/></g>
+              <rect x="268" y="98" width="94" height="8" rx="2" fill="#3A3C41"/>
+              <rect x="540" y="190" width="36" height="86" rx="4" fill="rgba(255,255,255,0.10)" stroke="rgba(255,255,255,0.5)"/>
+              <rect x="547" y="199" width="24" height="24" rx="2" fill="#141518" stroke="#4A4B50"/>
+              <circle cx="559" cy="211" r="7" fill="#0B0C0E" stroke="#6A6C72" stroke-width="1.5"/>
+              <circle cx="556.5" cy="208.5" r="2" fill="#8FB0FF" opacity=".8"/>
+            </g>
+            <g class="part todo" data-part="4" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="3" stroke-dasharray="6 6" stroke-linecap="round">
+              <rect x="200" y="58" width="44" height="30" rx="6"/>
+              <path d="M222 58 L300 20 L392 46"/>
+              <path d="M392 46 l20 -10 M392 46 l20 10"/>
+              <circle cx="300" cy="20" r="8"/>
+            </g>
+          </svg>
           <ul class="stack-legend" aria-hidden="true"><li><i></i>Built</li><li><i class="todo"></i>Not built yet</li></ul>
-        </div>
+        </figure>
         <div>
           <div class="stack-bar" aria-hidden="true"><span id="stack-bar"></span></div>
           <ol class="stack-list">
@@ -758,39 +802,43 @@ document.addEventListener('DOMContentLoaded', function () {
     } });
   });
 
-  // Exploded stack: pinned + scrubbed on large screens, a simple reveal elsewhere
+  // Build-up: the tank assembles layer by layer while the section is pinned
   var stack = document.getElementById('stack');
-  var layers = gsap.utils.toArray('.layer');
+  var parts = gsap.utils.toArray('.part');
   var items = gsap.utils.toArray('.stack-list li');
   var stepBar = document.getElementById('stack-bar');
   function setActive(n) {
     items.forEach(function (li, i) { li.classList.toggle('active', i === n); });
-    layers.forEach(function (l, i) { l.classList.toggle('active', i === n); });
+    parts.forEach(function (g, i) { g.classList.toggle('active', i === n); });
   }
   var mm = gsap.matchMedia();
   mm.add('(min-width: 901px) and (min-height: 700px)', function () {
     stack.classList.add('pinned');
     setActive(0);
-    gsap.set(layers, { y: function (i) { return -i * 12; } });
-    gsap.set(stepBar, { scaleX: 0 });
+    var later = parts.slice(1);
+    gsap.set(later, { opacity: 0, y: -90 });
+    gsap.set(stepBar, { scaleX: 0.2 });
     var current = -1;
     var tl = gsap.timeline({
       scrollTrigger: {
-        trigger: stack, start: 'top top', end: '+=260%', pin: true, scrub: 0.6, anticipatePin: 1,
+        trigger: stack, start: 'top top', end: '+=130%', pin: true, scrub: 0.5, anticipatePin: 1,
         onUpdate: function (self) {
           var p = self.progress;
-          var n = p < 0.3 ? 0 : Math.min(4, Math.floor((p - 0.3) / 0.14) + 1);
+          var n = p < 0.03 ? 0 : Math.min(4, Math.floor(p / 0.22) + 1);
           if (n !== current) { current = n; setActive(n); }
         }
       }
     });
-    tl.to(layers, { y: function (i) { return -i * 62; }, ease: 'power2.inOut', duration: 0.3 }, 0)
-      .to(stepBar, { scaleX: 1, ease: 'none', duration: 1 }, 0);
+    later.forEach(function (g, k) {
+      tl.to(g, { opacity: 1, y: 0, ease: 'power3.out', duration: 0.18 }, k * 0.22);
+    });
+    tl.to(stepBar, { scaleX: 1, ease: 'none', duration: 0.84 }, 0)
+      .to({}, { duration: 0.16 });
     return function () { stack.classList.remove('pinned'); setActive(-1); };
   });
   mm.add('(max-width: 900px), (max-height: 699px)', function () {
-    gsap.from(layers, { y: 0, opacity: 0, duration: 1.1, ease: 'expo.out', stagger: 0.08,
-      scrollTrigger: { trigger: '.stack-visual', start: 'top 80%', once: true } });
+    gsap.from(parts, { opacity: 0, y: -60, duration: 0.9, ease: 'power3.out', stagger: 0.22,
+      scrollTrigger: { trigger: '.stack-visual', start: 'top 75%', once: true } });
   });
 
   // Images can change layout once loaded
