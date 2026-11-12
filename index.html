@@ -251,6 +251,10 @@
   .entry p { color: var(--muted); }
   .entry ul { margin: 0; padding-left: 1.2rem; color: var(--muted); }
   .entry li { margin-bottom: 0.4rem; }
+  .fix { margin: 1.25rem 0 0; padding: 1rem 1.1rem; border-radius: 16px; background: var(--panel); color: var(--ink) !important; font-size: 0.95rem; line-height: 1.5; }
+  .fix span { display: block; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 0 0.2rem; }
+  .fix span + * , .fix span:not(:first-child) { margin-top: 0.7rem; }
+  code { font: 0.88em ui-monospace, SFMono-Regular, Menlo, monospace; background: rgba(127,127,127,0.14); padding: 0.1em 0.35em; border-radius: 5px; }
 
   /* ---------- Status + next ---------- */
   .table-box { overflow-x: auto; }
@@ -460,9 +464,9 @@
         <ol class="step-dots" aria-hidden="true"><li>01</li><li>02</li><li>03</li><li>04</li><li>05</li></ol>
         <ol class="stack-list">
             <li data-step="0"><span class="num">01</span><div><h3>Tracked chassis <span class="tag">done</span></h3><div class="desc"><p>TS100 metal tank kit, two 25 mm encoder gear motors.</p></div></div></li>
-            <li data-step="1"><span class="num">02</span><div><h3>Drive electronics <span class="tag">done</span></h3><div class="desc"><p>ESP32 + L298N dual H-bridge, encoder feedback to the ESP32.</p></div></div></li>
+            <li data-step="1"><span class="num">02</span><div><h3>Drive electronics <span class="tag">done</span></h3><div class="desc"><p>ESP32 + L298N dual H-bridge, USB serial link to the Jetson.</p></div></div></li>
             <li data-step="2"><span class="num">03</span><div><h3>Compute deck <span class="tag">done</span></h3><div class="desc"><p>Clear acrylic deck on brass standoffs, L298N underneath.</p></div></div></li>
-            <li data-step="3"><span class="num">04</span><div><h3>Jetson and camera <span class="tag">in progress</span></h3><div class="desc"><p>Jetson Orin Nano, IMX219 over CSI. YOLO and ROS2 in progress.</p></div></div></li>
+            <li data-step="3"><span class="num">04</span><div><h3>Jetson and camera <span class="tag">in progress</span></h3><div class="desc"><p>Jetson Orin Nano, IMX219 over CSI, YOLO11n on the GPU.</p></div></div></li>
             <li data-step="4"><span class="num">05</span><div><h3>SO-101 arm <span class="tag">ordered</span></h3><div class="desc"><p>Servos and controller ordered; frame to be 3D-printed.</p></div></div></li>
           </ol>
       </div>
@@ -497,7 +501,7 @@
         <article class="dec" data-reveal>
           <span class="dec-num">03</span>
           <h3>Split control</h3>
-          <p>ESP32 runs the motors and reads the encoders. The Jetson Orin Nano runs vision.</p>
+          <p>ESP32 runs the motors. The Jetson Orin Nano runs vision and sends drive commands over USB serial.</p>
           <p class="why"><span>Why</span>The timing-critical drive loop stays on a microcontroller; the GPU is kept for vision.</p>
         </article>
         <article class="dec" data-reveal>
@@ -528,11 +532,11 @@
       <div class="head" data-reveal>
         <p class="eyebrow">Architecture</p>
         <h2>Two controllers, one bus voltage.</h2>
-        <p class="intro">Real-time drive on the ESP32, vision on the Jetson. Dashed = not built yet.</p>
+        <p class="intro">Real-time drive on the ESP32, vision on the Jetson, linked over USB serial. Dashed = not built or not in use yet.</p>
       </div>
       <div class="arch">
         <div class="diagram" data-reveal>
-          <svg viewBox="0 0 440 320" role="img" aria-label="Block diagram. Built: IMX219 camera into the Jetson Orin Nano; ESP32 to the L298N driver and two encoder motors, with encoder feedback to the ESP32. Not built yet: the link between the Jetson and the ESP32, the SO-101 arm and the 3S LiPo battery.">
+          <svg viewBox="0 0 440 320" role="img" aria-label="Block diagram. Built: IMX219 camera into the Jetson Orin Nano over CSI; Jetson to ESP32 over USB serial; ESP32 to the L298N driver and two motors. Not in use yet: encoder feedback. Not built yet: the SO-101 arm and the 3S LiPo battery.">
             <rect class="box" x="20" y="20" width="110" height="46" rx="8"/>
             <text x="75" y="48" text-anchor="middle" font-size="13">IMX219 camera</text>
             <rect class="box brain" x="165" y="12" width="130" height="62" rx="8"/>
@@ -556,27 +560,28 @@
             <text x="75" y="168" text-anchor="middle" class="lbl">ordered</text>
             <path class="wire" d="M130 43 H165"/><text x="147" y="36" text-anchor="middle" class="lbl">CSI</text>
             <path class="wire todo" d="M295 43 H320"/>
-            <path class="wire todo" d="M230 74 V130"/>
+            <path class="wire" d="M230 74 V130"/><text x="238" y="106" class="lbl">USB serial</text>
             <path class="wire" d="M230 180 V230"/>
             <path class="wire" d="M165 253 H130"/>
             <path class="wire" d="M295 253 H320"/>
-            <path class="wire" d="M75 230 V215 H180 V180"/>
-            <path class="wire" d="M370 230 V215 H280 V180"/>
+            <path class="wire todo" d="M75 230 V215 H180 V180"/>
+            <path class="wire todo" d="M370 230 V215 H280 V180"/>
             <path class="wire todo" d="M130 155 H165"/>
           </svg>
           <ul class="legend">
             <li><i></i>Built</li>
-            <li><i class="todo"></i>Not built yet</li>
+            <li><i class="todo"></i>Not built or not in use yet</li>
           </ul>
         </div>
         <dl class="spec">
           <div class="wide" data-reveal><dt>Compute</dt><dd>NVIDIA Jetson Orin Nano, headless, developed over SSH / VS Code</dd></div>
-          <div data-reveal><dt>Vision</dt><dd>Sony IMX219 over CSI; YOLO <span class="tag">in progress</span></dd></div>
-          <div data-reveal><dt>Software</dt><dd>ROS2 <span class="tag">in progress</span></dd></div>
-          <div data-reveal><dt>Drive control</dt><dd>ESP32, L298N dual H-bridge, encoder feedback</dd></div>
-          <div data-reveal><dt>Manual drive</dt><dd>Sony game controller via the ESP32</dd></div>
+          <div data-reveal><dt>Vision</dt><dd>Sony IMX219 over CSI; YOLO11n (Ultralytics) on the GPU, ~25 ms per image</dd></div>
+          <div data-reveal><dt>Software</dt><dd>ROS2 Humble <span class="tag">next</span></dd></div>
+          <div data-reveal><dt>Drive control</dt><dd>ESP32, L298N dual H-bridge; encoders wired, not used yet</dd></div>
+          <div data-reveal><dt>Manual drive</dt><dd>Sony PS5 controller over Bluetooth (Bluepad32)</dd></div>
+          <div class="wide" data-reveal><dt>Jetson ↔ ESP32</dt><dd>USB serial, 115200 baud, <code>L&lt;speed&gt;,R&lt;speed&gt;</code> commands; stops if no command for 500 ms; the controller always has priority</dd></div>
           <div class="wide" data-reveal><dt>Chassis</dt><dd>TS100 metal tank, skid steering; 2 × 25 mm gear motors with encoders (DC 9 V, 120 RPM)</dd></div>
-          <div class="wide" data-reveal><dt>Power</dt><dd>12 V adapter now; 3S LiPo ordered</dd></div>
+          <div class="wide" data-reveal><dt>Power</dt><dd>12 V supply for the motors now; 3S LiPo ordered</dd></div>
           <div class="wide" data-reveal><dt>Arm</dt><dd>SO-101 follower: 6 × Feetech STS3215 (12 V, 30 kg·cm), Waveshare Bus Servo Adapter (A) <span class="tag">ordered</span></dd></div>
           <div class="wide" data-reveal><dt>Electronics</dt><dd>Custom PCB to replace the hand wiring <span class="tag">planned</span></dd></div>
         </dl>
@@ -627,12 +632,12 @@
         <div data-reveal>
           <div class="step">Step 3</div>
           <h3>Drive prototype</h3>
-          <p>ESP32 to an L298N on a breadboard, both encoders wired back to the ESP32.</p>
+          <p>ESP32 to an L298N on a breadboard, then onto the chassis.</p>
           <ul>
-            <li>Encoder feedback used in the drive code</li>
-            <li>Manual drive with a Sony game controller</li>
-            <li>12 V wall adapter</li>
+            <li>Manual drive with a Sony PS5 controller (Bluetooth, Bluepad32)</li>
+            <li>Motors on a 12 V supply</li>
           </ul>
+          <p class="fix"><span>Problem</span>Two ESP32 boards burned out: no serial data, EN stuck at 0.83 V, chip hot on USB power alone.<span>Fix</span>Suspected the board undersides shorting against the metal plate. Insulated the ESP32 and the L298N from the plate, and after that everything worked.</p>
         </div>
       </article>
 
@@ -645,10 +650,11 @@
           <h3>Integration</h3>
           <p>Soldered wiring and a screw-terminal breakout for the ESP32. Jetson Orin Nano on a raised acrylic deck, IMX219 at the front.</p>
           <ul>
-            <li>IMX219 to the Jetson over CSI</li>
-            <li>Headless, developed over SSH / VS Code</li>
-            <li>YOLO models loaded onto the Jetson</li>
+            <li>IMX219 to the Jetson over CSI, 1280 × 720 at 30 fps via GStreamer</li>
+            <li>YOLO11n on the GPU, running on the live camera feed</li>
+            <li>Jetson drives the ESP32 over USB serial; person following by turning in place (tethered test)</li>
           </ul>
+          <p class="fix"><span>Problem</span>jetson-inference detectnet would not run on TensorRT 10.3, and the camera image came out upside down.<span>Fix</span>Switched to Ultralytics YOLO11n, and set <code>flip-method=2</code> in the GStreamer pipeline.</p>
         </div>
       </article>
     </div>
@@ -667,8 +673,8 @@
             <tr><th scope="col">Stage</th><th scope="col">Content</th><th scope="col">Status</th></tr>
           </thead>
           <tbody>
-            <tr><th scope="row">1. Drive platform</th><td>Chassis, motors and encoders, ESP32 and L298N, manual control with a Sony game controller</td><td><span class="pill-status done">Done</span></td></tr>
-            <tr><th scope="row">2. Vision and autonomy</th><td>IMX219 on the Jetson, ROS2, object detection, Jetson to ESP32 link, 3S LiPo power</td><td><span class="pill-status now">In progress</span></td></tr>
+            <tr><th scope="row">1. Drive platform</th><td>Chassis, motors, ESP32 and L298N, manual control with a Sony PS5 controller</td><td><span class="pill-status done">Done</span></td></tr>
+            <tr><th scope="row">2. Vision and autonomy</th><td>IMX219 and YOLO11n on the Jetson, Jetson to ESP32 serial link (working); ROS2, battery power, forward motion in following (next)</td><td><span class="pill-status now">In progress</span></td></tr>
             <tr><th scope="row">3. Arm and pick-up</th><td>SO-101 follower (servos and controller ordered), grasping and placing objects by category</td><td><span class="pill-status planned">Planned</span></td></tr>
             <tr><th scope="row">Custom PCB</th><td>Replace hand wiring</td><td><span class="pill-status planned">Planned</span></td></tr>
           </tbody>
@@ -679,7 +685,7 @@
         <div class="disc">
           <h3><button data-disclosure data-group="next" data-open="true" aria-expanded="true" aria-controls="next-1">Vision and autonomy
             <svg class="chev" aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l5 5 5-5"/></svg></button></h3>
-          <div class="panel open" id="next-1"><div><p>YOLO detection on the camera feed, ROS2 on the Jetson, and a Jetson to ESP32 link so the robot drives itself.</p></div></div>
+          <div class="panel open" id="next-1"><div><p>Add forward motion to person following, wrap the stack in ROS2 Humble nodes, then detect socks and toys.</p></div></div>
         </div>
         <div class="disc">
           <h3><button data-disclosure data-group="next" aria-expanded="false" aria-controls="next-2">Power and PCB
