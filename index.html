@@ -81,14 +81,15 @@
   .nav ul { list-style: none; display: flex; align-items: center; gap: 1.75rem; margin: 0; padding: 0; }
   .nav ul a { color: #B4B6BB; text-decoration: none; font-size: 0.82rem; display: inline-block; padding: 0.8rem 0; transition: color 250ms ease; }
   .nav ul a:hover { color: #FFFFFF; }
-  .nav ul a.pill { background: #2F5FD0; color: #FFFFFF; padding: 0.35rem 0.95rem; border-radius: 999px; font-weight: 500; }
-  .nav ul a.pill:hover { background: #2552BC; }
+  .nav ul a.pill { background: #F5F5F7; color: #1D1D1F; padding: 0.35rem 0.95rem; border-radius: 999px; font-weight: 500; transition: background-color 250ms ease; }
+  .nav ul a.pill:hover { background: #FFFFFF; color: #000000; }
   .progress { position: absolute; left: 0; bottom: -1px; height: 2px; width: 100%; background: #8FB0FF; transform: scaleX(0); transform-origin: 0 50%; }
 
   .btn { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 50px; padding: 0 1.9rem; border-radius: 999px;
-         background: #2F5FD0; color: #FFFFFF; font-weight: 500; font-size: 1.05rem; text-decoration: none;
+         background: #F5F5F7; color: #1D1D1F; font-weight: 500; font-size: 1.05rem; letter-spacing: -0.01em; text-decoration: none;
          transition: background-color 250ms ease, transform 400ms var(--ease), box-shadow 400ms var(--ease); }
-  .btn:hover { background: #2552BC; color: #FFFFFF; transform: translateY(-1px) scale(1.02); box-shadow: 0 12px 32px rgba(47,95,208,0.32); }
+  .btn:hover { background: #FFFFFF; color: #000000; transform: scale(1.02); box-shadow: 0 8px 30px rgba(255,255,255,0.12); }
+  .btn:focus-visible { outline: 2px solid #F5F5F7; outline-offset: 3px; }
   .btn:active { transform: scale(0.98); transition-duration: 150ms; }
 
   /* ---------- Hero ---------- */
