@@ -890,7 +890,7 @@ function init() {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.2;
+  renderer.toneMappingExposure = 1.1;
   renderer.setClearColor(0x000000, 0);
 
   const scene = new THREE.Scene();
@@ -899,17 +899,18 @@ function init() {
   const cam = new THREE.PerspectiveCamera(30, 1.35, 1, 500);
   cam.position.set(36, 22, 47);
   cam.lookAt(0, 8, 0);
-  const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(24, 40, 30); scene.add(key);
+  const key = new THREE.DirectionalLight(0xffffff, 2.6); key.position.set(24, 40, 30); scene.add(key);
   const rim = new THREE.DirectionalLight(0x8fb0ff, 1.0); rim.position.set(-30, 18, -26); scene.add(rim);
   scene.add(new THREE.HemisphereLight(0xffffff, 0x202022, 0.35));
 
   const std = (color, roughness, metalness, extra) => new THREE.MeshStandardMaterial(Object.assign({ color, roughness, metalness }, extra || {}));
+  const steel = (color, roughness, extra) => new THREE.MeshPhysicalMaterial(Object.assign({ color, roughness, metalness: 1, envMapIntensity: 1.25, clearcoat: 0.35, clearcoatRoughness: 0.25, anisotropy: 0.6 }, extra || {}));
   const M = {
-    track: std(0x101112, 0.85, 0.15), cleat: std(0x1a1b1d, 0.8, 0.2), wheel: std(0x1d1e21, 0.5, 0.7),
-    body: std(0x16171a, 0.45, 0.75), plate: std(0x1c1d20, 0.4, 0.8), silver: std(0xc9cbd0, 0.25, 1), steel: std(0x8c8f95, 0.35, 1),
+    track: steel(0x8a9097, 0.38, { metalness: 0.6, clearcoat: 0.25, anisotropy: 0 }), cleat: steel(0x9aa0a8, 0.26, { anisotropy: 0 }), wheel: steel(0xc3c7cc, 0.2),
+    body: steel(0xb9bdc3, 0.28), plate: steel(0xdadde1, 0.2), silver: steel(0xe2e4e7, 0.14), steel: steel(0x9ea3a9, 0.26),
     green: std(0x1f7a3e, 0.6, 0.1), greenLt: std(0x2ea05a, 0.55, 0.05), red: std(0xc43a2f, 0.55, 0.05), blue: std(0x2d6fd6, 0.5, 0.05),
-    chip: std(0x111214, 0.4, 0.3), white: std(0xe6e6e3, 0.6, 0), brass: std(0xd6b06a, 0.3, 1),
-    acrylic: std(0xffffff, 0.05, 0, { transparent: true, opacity: 0.22 }), board: std(0x1b1c1f, 0.6, 0.2), sink: std(0x2a2c30, 0.35, 0.85),
+    chip: std(0x111214, 0.4, 0.3), white: std(0xe6e6e3, 0.6, 0), brass: steel(0xd9b46c, 0.22, { anisotropy: 0 }),
+    acrylic: std(0xffffff, 0.05, 0, { transparent: true, opacity: 0.22 }), board: std(0x1b1c1f, 0.6, 0.2), sink: steel(0xa7acb3, 0.3),
     orange: std(0xd9822b, 0.5, 0.05), yellow: std(0xe3b341, 0.5, 0), wireBlue: std(0x4a90e2, 0.5, 0), wireGreen: std(0x3fae67, 0.5, 0),
     lens: std(0x07080a, 0.1, 0.5), print: std(0xf1f1ee, 0.7, 0), servo: std(0x141414, 0.45, 0.1), pcb: std(0x2c8a4a, 0.6, 0.1)
   };
