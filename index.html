@@ -268,6 +268,17 @@
   .next-list li::before { content: "0" counter(n); display: block; font-size: 0.8rem; font-weight: 600; color: var(--accent); margin-bottom: 0.5rem; }
   .next-list b { display: block; color: var(--ink); font-size: 1.1rem; margin-bottom: 0.4rem; }
   @media (max-width: 900px) { .next-list { grid-template-columns: 1fr; } }
+  .entry .lead { font-size: 1.1rem; line-height: 1.5; color: var(--ink); margin: 0 0 1rem; }
+  details.more { border-top: 1px solid var(--line); padding-top: 0.8rem; }
+  details.more summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; font-weight: 600; font-size: 0.95rem; color: var(--accent); }
+  details.more summary::-webkit-details-marker { display: none; }
+  details.more summary::after { content: ""; width: 0.45rem; height: 0.45rem; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg) translateY(-2px); transition: transform 250ms ease; }
+  details.more[open] summary::after { transform: rotate(-135deg) translateY(-2px); }
+  details.more[open] summary { margin-bottom: 0.9rem; }
+  details.more::details-content { block-size: 0; overflow: hidden; transition: block-size 350ms ease, content-visibility 350ms allow-discrete; }
+  details.more[open]::details-content { block-size: auto; }
+  :root { interpolate-size: allow-keywords; }
+  details.more .fix { margin-top: 0.8rem; }
   .media-col { min-width: 0; }
   .entry:nth-of-type(even) .media-col { order: 2; }
   .thumbs { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.75rem; }
@@ -407,8 +418,8 @@
       <div class="stack-copy">
         <p class="eyebrow" data-hero>Rotem Ezra · Robotics project</p>
         <h1 id="hero-title" data-hero>Peace Keeper</h1>
-        <p class="lede" data-hero>An autonomous tidying robot. It drives on tracks, finds things on the floor and puts each one where it belongs: socks to the laundry basket, toys to the toy box. Built in stages, each layer working before the next. Below: what I tried, what failed, and why I chose what I chose.</p>
-        <p class="now" data-hero><b>Now</b> · A detector I trained runs on the Jetson at about 24 FPS, but from the robot's low camera it still misses some toys, so next is fine-tuning on frames from the robot itself. The drive PCB is ordered.</p>
+        <p class="lede" data-hero>An autonomous tidying robot: socks to the laundry basket, toys to the toy box. Built in stages, each layer working before the next.</p>
+        <p class="now" data-hero><b>Now</b> · My own detector runs on the Jetson but still misses some toys; next is fine-tuning on the robot's own frames. Drive PCB ordered.</p>
         <div class="cta" data-hero><a class="btn" href="#log">Read the build log</a></div>
       </div>
       <div class="stack-sticky">
@@ -521,15 +532,17 @@
         <div data-reveal>
           <div class="step">01 · Drive base</div>
           <h3>A microcontroller for the motors, a computer for the thinking</h3>
-          <p>A TS100 metal tank kit with two 25 mm encoder gear motors and skid steering. An ESP32 drives the motors through an L298N; the Jetson only sends speed commands.</p>
-          <ul>
-            <li>Link: USB serial, 115200 baud, <code>L&lt;speed&gt;,R&lt;speed&gt;</code> (−255…255)</li>
-            <li>Safety: no command for 500 ms → motors stop; a Sony PS5 controller (Bluetooth, Bluepad32) always has priority</li>
-            <li>Wired on a breadboard first, then soldered with a screw-terminal breakout</li>
-            <li>Encoders are wired but not used yet: no speed loop or odometry so far</li>
-          </ul>
-          <p class="fix"><span>Decision</span>Ready-made chassis, and split control.<span>Why</span>The effort goes into the system, not the mechanics. The timing-critical drive loop stays on a microcontroller, and if the Jetson crashes the robot stops by itself.</p>
-          <p class="fix"><span>Problem</span>Two ESP32 boards died: no serial data, EN stuck at 0.83 V, chip hot on USB power alone.<span>Fix</span>Most likely the board undersides shorted against the metal plate. Insulated the ESP32 and the L298N from the plate; no failures since. Smaller ones: the left motor and the steering ran reversed, fixed in code.</p>
+          <p class="lead">An ESP32 drives the tracks; the Jetson only sends speed commands.</p>
+          <details class="more">
+            <summary>Read more</summary>
+            <ul>
+              <li>TS100 tank kit, two 25 mm encoder motors, L298N driver</li>
+              <li>USB serial <code>L&lt;speed&gt;,R&lt;speed&gt;</code>; no command for 500 ms → stop; PS5 controller overrides</li>
+              <li>Encoders wired, not used yet</li>
+            </ul>
+            <p class="fix"><span>Why</span>Real-time drive stays on the microcontroller; if the Jetson crashes, the robot stops.</p>
+            <p class="fix"><span>Problem</span>Two ESP32s burned out.<span>Fix</span>The boards were likely shorting to the metal plate; insulated them, no failures since.</p>
+          </details>
         </div>
       </article>
 
@@ -540,14 +553,15 @@
         <div data-reveal>
           <div class="step">02 · Jetson and camera</div>
           <h3>Getting the first detections on the robot</h3>
-          <p>A Jetson Orin Nano (8 GB) on an acrylic deck above the drive, an IMX219 camera at the front. Headless, developed over SSH.</p>
-          <ul>
-            <li>Camera over CSI, 1280 × 720 at 30 fps through GStreamer, frames straight into numpy</li>
-            <li>An ISP calibration file for the IMX219 fixed most of the pink colour cast</li>
-            <li>YOLO11n on the GPU, about 25 ms per image</li>
-            <li>First closed loop: the robot turns in place to follow a person (tethered test, no forward motion yet)</li>
-          </ul>
-          <p class="fix"><span>Problem</span>NVIDIA's jetson-inference detector would not run on TensorRT 10.3, and the image came out upside down.<span>Fix</span>Switched to Ultralytics YOLO, and set <code>flip-method=2</code> in the GStreamer pipeline.</p>
+          <p class="lead">Jetson Orin Nano and an IMX219 camera, running YOLO on the live feed.</p>
+          <details class="more">
+            <summary>Read more</summary>
+            <ul>
+              <li>1280 × 720 at 30 fps over CSI, YOLO11n at about 25 ms per frame</li>
+              <li>First closed loop: turns in place to follow a person (tethered)</li>
+            </ul>
+            <p class="fix"><span>Problem</span>NVIDIA's detector didn't run on TensorRT 10.3; the image was upside down.<span>Fix</span>Switched to Ultralytics YOLO; <code>flip-method=2</code> in GStreamer.</p>
+          </details>
         </div>
       </article>
 
@@ -569,14 +583,15 @@
         <div data-reveal>
           <div class="step">03 · Vision, part 1</div>
           <h3>Off-the-shelf detectors don't know what a sock is</h3>
-          <p>The robot has to recognise socks, clothes and toys on the floor. I started with models that need no training.</p>
-          <ul>
-            <li>COCO has 80 classes and no sock, so the standard YOLO11 calls a sock a “mouse” and misses the toy car</li>
-            <li>YOLOE takes the class names as text. It finds the car and the socks, but calls white terry socks a “towel”</li>
-            <li>A second opinion from CLIP on each crop did not change that</li>
-            <li>YOLOE as a TensorRT FP16 engine: 44 ms per frame, against 66 ms in PyTorch</li>
-          </ul>
-          <p class="fix"><span>Decision</span>Keep YOLOE for finding objects, and ask a model that can actually look at each one what it is.<span>Why</span>Finding the object was not the problem; naming it was.</p>
+          <p class="lead">Ready-made models found the objects but named the socks wrong.</p>
+          <details class="more">
+            <summary>Read more</summary>
+            <ul>
+              <li>COCO YOLO11 has no sock class: “mouse”</li>
+              <li>Open-vocabulary YOLOE found the car, but called the socks “towel”; a CLIP re-check didn't help</li>
+            </ul>
+            <p class="fix"><span>Decision</span>Keep YOLOE to find objects, and ask a smarter model to name them.</p>
+          </details>
         </div>
       </article>
 
@@ -586,15 +601,17 @@
         </div>
         <div data-reveal>
           <div class="step">04 · Vision, part 2</div>
-          <h3>A vision-language model on 8 GB: from 44 s to 4.5 s per object, and then dropping it</h3>
-          <p>Qwen2.5-VL 3B, running locally on the Jetson. YOLOE finds a box, the box is drawn in red on a crop, and the model picks one answer from a fixed list.</p>
-          <ul>
-            <li>13 of 13 test crops named correctly, socks included</li>
-            <li>About 4.5 s per object, almost all of it image encoding on the GPU</li>
-            <li>Inside the live camera stream: 44 s per object, with the model's server at about 550 % CPU</li>
-          </ul>
-          <p class="fix"><span>Problem</span>Memory looked like the cause: the model server (4.4 GB), the stream (1.2 GB) and the camera stack (0.45 GB) filled the 8 GB. I tried throttling detection, forcing GPU layers, a unified-memory flag (it crashed on images), running headless, and replacing zram with a swap file. None of it helped.<span>Fix</span>The real cause was load order: when the model loaded while the camera process was running, it was placed on the CPU. Loading it first brought it back to 4.4–7 s per object inside the stream.</p>
-          <p class="fix"><span>Decision</span>No language model at runtime. It is still seconds per object and sits at the edge of 8 GB. It is more useful offline, suggesting labels for training data (the frame shown here), and those labels still get checked.</p>
+          <h3>A vision-language model on 8 GB: 44 s → 4.5 s, then dropped</h3>
+          <p class="lead">Qwen2.5-VL named every test crop right, but slowly.</p>
+          <details class="more">
+            <summary>Read more</summary>
+            <ul>
+              <li>13 of 13 crops correct, about 4.5 s per object</li>
+              <li>Inside the live stream: 44 s per object, running on the CPU</li>
+            </ul>
+            <p class="fix"><span>Problem</span>Looked like memory; five memory fixes changed nothing.<span>Fix</span>Load order: loaded after the camera, the model fell back to the CPU. Loading it first: 4.4–7 s.</p>
+            <p class="fix"><span>Decision</span>No language model at runtime: too slow, too close to 8 GB. It only suggests training labels offline.</p>
+          </details>
         </div>
       </article>
 
@@ -611,15 +628,16 @@
         <div data-reveal>
           <div class="step">05 · Vision, part 3</div>
           <h3>Training my own detector, and a rule about people</h3>
-          <p>A YOLO11s trained in the cloud on public data, run on the Jetson with TensorRT and no PyTorch.</p>
-          <ul>
-            <li>Data: Open Images, about 1,000 images per class for 8 classes, plus 800 indoor images with none of them</li>
-            <li>60 epochs on a cloud T4 GPU (2.8 h): mAP50 0.57 on the validation set</li>
-            <li>Runtime: TensorRT + NumPy + OpenCV only. 33.5 ms per frame, about 24 FPS live, 1.9 GB of RAM used on the whole Jetson</li>
-            <li>Sock, shirt, pants, shorts and towel all go to the laundry basket, so the robot only needs two groups: laundry and toys. Mixing up a sock and a towel costs nothing.</li>
-          </ul>
-          <p class="fix"><span>Rule</span>Clothes someone is wearing, or anything in a hand, must never become a target.<span>How</span>A person-segmentation model runs on every frame; any object at least 30 % covered by the person mask is ignored (blue in the stream). Labels on people were also removed from the training data. With the filter the detector runs at about 15 FPS.</p>
-          <p class="fix"><span>Result</span>From the robot's low camera it finds a white sock (0.63) that the earlier models called a mouse or a towel, but it still misses close-up socks and the toy car. Open Images shows clothes mostly on people, not on the floor.<span>Next</span>93 frames from the robot's own camera are captured and auto-labelled; a short fine-tune on them is the next step.</p>
+          <p class="lead">A YOLO11s trained in the cloud, running on the Jetson in TensorRT without PyTorch.</p>
+          <details class="more">
+            <summary>Read more</summary>
+            <ul>
+              <li>Open Images, 8 classes, mAP50 0.57; about 24 FPS on the Jetson</li>
+              <li>All clothes go to the laundry basket, so a sock/towel mix-up costs nothing</li>
+            </ul>
+            <p class="fix"><span>Rule</span>Never target clothes someone is wearing.<span>How</span>A person mask on every frame; anything 30 % on a person is ignored (about 15 FPS with it).</p>
+            <p class="fix"><span>Result</span>Finds a sock the earlier models missed, but still misses toys from the low camera.<span>Next</span>Fine-tune on 93 frames from the robot's own camera.</p>
+          </details>
         </div>
       </article>
 
@@ -630,16 +648,17 @@
         <div data-reveal>
           <div class="step">06 · Drive PCB</div>
           <h3>Replacing the hand wiring with one small board</h3>
-          <p>A two-layer board, 84 × 51 mm, that takes the ESP32 dev board, two motor drivers, the battery input and both motor cables. Ordered and on its way; the video is a 3D render of the design.</p>
-          <ul>
-            <li>Two DRV8874 drivers (PH/EN), current limit set to about 3 A per motor, motor current fed back to the ESP32</li>
-            <li>3S LiPo in through an XT60: P-MOSFET reverse-polarity protection, TVS diode, bulk capacitor, battery voltage to an ADC pin</li>
-            <li>Drivers held off by a pull-down until the firmware enables them, so nothing moves while the ESP32 boots</li>
-            <li>One six-way screw terminal per motor, in the order of the motor's own cable: encoder B, A, 3.3 V, GND, motor −, motor +</li>
-            <li>Generated, routed and checked by script: KiCad's Python API, Freerouting, and KiCad's design rule check</li>
-          </ul>
-          <p class="fix"><span>Decision</span>The first version was 104 × 72 mm, with JST connectors and a UART header to the Jetson. The second dropped the header, since the ESP32 already talks to the Jetson over its own USB-C, and switched to screw terminals.<span>Why</span>A smaller board, and no crimping: the motor wires go straight in.</p>
-          <p class="fix"><span>Problem</span>The autorouter left ground islands and misread T-junctions, and in the manufacturer's placement preview the driver chips and the MOSFET came out turned 90°, with the XT60 facing into the board.<span>Fix</span>Hand-placed and locked the power copper, routed ground as tracks before pouring it, and re-ran routing until the check had no electrical errors. KiCad and the assembler define part orientation differently, so I corrected rotations and centres in the placement file and checked every polarised part again in the preview.</p>
+          <p class="lead">84 × 51 mm, two DRV8874 drivers, XT60 battery input, screw terminals. Ordered; the video is a 3D render.</p>
+          <details class="more">
+            <summary>Read more</summary>
+            <ul>
+              <li>About 3 A limit per motor, current and battery voltage read by the ESP32</li>
+              <li>Reverse-polarity protection; motors stay off while the ESP32 boots</li>
+              <li>Generated and routed by script (KiCad Python, Freerouting)</li>
+            </ul>
+            <p class="fix"><span>Decision</span>v2 dropped the UART header and JST plugs for screw terminals: smaller, no crimping.</p>
+            <p class="fix"><span>Problem</span>The assembler's preview showed chips turned 90° and the XT60 facing inward.<span>Fix</span>Corrected rotations in the placement file and rechecked every polarised part.</p>
+          </details>
         </div>
       </article>
     </div>
@@ -651,7 +670,7 @@
       <div class="head" data-reveal>
         <p class="eyebrow">Architecture</p>
         <h2>Two controllers, linked over USB.</h2>
-        <p class="intro">The ESP32 runs the motors in real time; the Jetson sees and decides, and only sends speed commands. Dashed = designed, ordered or not in use yet.</p>
+        <p class="intro">The ESP32 drives the motors; the Jetson sees and decides. Dashed = ordered or not in use yet.</p>
       </div>
       <div class="arch">
         <div class="diagram" data-reveal>
@@ -694,15 +713,14 @@
           </ul>
         </div>
         <dl class="spec">
-          <div class="wide" data-reveal><dt>Compute</dt><dd>NVIDIA Jetson Orin Nano 8 GB, JetPack 6.2, headless, developed over SSH</dd></div>
-          <div class="wide" data-reveal><dt>Vision</dt><dd>Sony IMX219 over CSI, 1280 × 720 at 30 fps. YOLO11s trained on Open Images, TensorRT FP16, no PyTorch at runtime: about 24 FPS, about 15 FPS with the person filter</dd></div>
-          <div data-reveal><dt>Drive control</dt><dd>ESP32; L298N today, DRV8874 drive PCB ordered; encoders wired, not used yet</dd></div>
-          <div data-reveal><dt>Manual drive</dt><dd>Sony PS5 controller over Bluetooth (Bluepad32)</dd></div>
-          <div class="wide" data-reveal><dt>Jetson ↔ ESP32</dt><dd>USB serial, 115200 baud, <code>L&lt;speed&gt;,R&lt;speed&gt;</code> commands; stops if no command for 500 ms; the controller always has priority</dd></div>
-          <div class="wide" data-reveal><dt>Chassis</dt><dd>TS100 metal tank, skid steering, two 25 mm gear motors with encoders</dd></div>
-          <div class="wide" data-reveal><dt>Power</dt><dd>12 V supply today; 3S LiPo <span class="tag">ordered</span>. Plan: battery → fuse → switch, then a 12 V buck-boost for the Jetson, and the motor drivers and arm straight from the battery</dd></div>
-          <div class="wide" data-reveal><dt>Arm</dt><dd>SO-101 follower: 6 × Feetech STS3215 (12 V, 30 kg·cm), Waveshare bus servo adapter to the Jetson over USB <span class="tag">ordered</span></dd></div>
-          <div data-reveal><dt>Software</dt><dd>Python on the Jetson, Arduino on the ESP32; ROS2 Humble <span class="tag">next</span></dd></div>
+          <div data-reveal><dt>Compute</dt><dd>Jetson Orin Nano 8 GB</dd></div>
+          <div data-reveal><dt>Vision</dt><dd>IMX219 camera, own YOLO11s in TensorRT</dd></div>
+          <div data-reveal><dt>Drive</dt><dd>ESP32, L298N today, DRV8874 PCB ordered</dd></div>
+          <div data-reveal><dt>Link</dt><dd>USB serial, 500 ms stop timeout</dd></div>
+          <div data-reveal><dt>Chassis</dt><dd>TS100 tracked kit, two encoder motors</dd></div>
+          <div data-reveal><dt>Manual</dt><dd>PS5 controller over Bluetooth</dd></div>
+          <div data-reveal><dt>Power</dt><dd>12 V supply; 3S LiPo <span class="tag">ordered</span></dd></div>
+          <div data-reveal><dt>Arm</dt><dd>SO-101, 6 × STS3215 servos <span class="tag">ordered</span></dd></div>
         </dl>
       </div>
     </div>
@@ -716,9 +734,9 @@
         <h2>What comes next.</h2>
       </div>
       <ol class="next-list" data-reveal>
-        <li><b>Vision</b> Fine-tune the detector on frames from the robot's own camera, then add forward motion and ROS2 Humble.</li>
-        <li><b>Drive and power</b> When the drive PCB arrives: new ESP32 firmware for the DRV8874 drivers, first power-up without motors, then the 3S battery for untethered runs.</li>
-        <li><b>Arm</b> Print and assemble the SO-101, mount it at the front, then close the loop: detect, drive, pick, place.</li>
+        <li><b>Vision</b> Fine-tune on the robot's own frames, then forward motion and ROS2.</li>
+        <li><b>Drive and power</b> PCB arrives: new firmware, first power-up, then battery.</li>
+        <li><b>Arm</b> Print and mount the SO-101, then detect, drive, pick, place.</li>
       </ol>
     </div>
   </section>
@@ -762,6 +780,12 @@ document.addEventListener('DOMContentLoaded', function () {
   var root = document.documentElement;
 
   /* ---- Disclosures (bento mini-cards, what's next) ---- */
+  document.querySelectorAll('details.more').forEach(function (d) {
+    d.addEventListener('toggle', function () {
+      d.querySelector('summary').textContent = d.open ? 'Show less' : 'Read more';
+      if (window.ScrollTrigger) setTimeout(function () { ScrollTrigger.refresh(); }, 400);
+    });
+  });
   document.querySelectorAll('[data-disclosure]').forEach(function (btn) {
     var panel = document.getElementById(btn.getAttribute('aria-controls'));
     function set(b, p, open) { b.setAttribute('aria-expanded', open ? 'true' : 'false'); p.classList.toggle('open', open); }
