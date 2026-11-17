@@ -419,7 +419,7 @@
         <p class="eyebrow" data-hero>Rotem Ezra · Robotics project</p>
         <h1 id="hero-title" data-hero>Scrub</h1>
         <p class="lede" data-hero>An autonomous tidying robot: socks to the laundry basket, toys to the toy box. Built in stages, each layer working before the next.</p>
-        <p class="now" data-hero><b>Now</b> · My own detector runs on the Jetson but still misses some toys. Next is fine-tuning on the robot's own frames. Drive PCB designed and ordered.</p>
+        <p class="now" data-hero><b>Now</b> · My own detector runs on the Jetson, and I keep training it on the robot's own camera frames until it reaches the accuracy I want. Drive PCB designed and ordered.</p>
         <div class="cta" data-hero><a class="btn" href="#log">Read the build log</a></div>
       </div>
       <div class="stack-sticky">
@@ -542,7 +542,7 @@
               <li>Encoders wired, not used yet</li>
             </ul>
             <p class="fix"><span>Why</span>Real-time drive stays on the microcontroller. If the Jetson crashes, the robot stops.</p>
-            <p class="fix"><span>Problem</span>Two ESP32s burned out.<span>Fix</span>The boards were likely shorting to the metal plate. I insulated them and there were no failures since.</p>
+            <p class="fix"><span>Problem</span>Two early ESP32 boards stopped working.<span>Fix</span>The boards were likely shorting to the metal plate. I insulated them and there were no failures since.</p>
           </details>
         </div>
       </article>
@@ -602,7 +602,7 @@
         </div>
         <div data-reveal>
           <div class="step">04 · Vision, part 2</div>
-          <h3>A vision-language model on 8 GB: 44 s → 4.5 s, then dropped</h3>
+          <h3>A vision-language model on 8 GB: from 44 s to 4.5 s</h3>
           <p class="lead">Qwen2.5-VL named every test crop right, but slowly.</p>
           <details class="more">
             <summary>Read more</summary>
@@ -610,7 +610,7 @@
               <li>13 of 13 crops correct, about 4.5 s per object</li>
               <li>Inside the live stream: 44 s per object, running on the CPU</li>
             </ul>
-            <p class="fix"><span>Problem</span>It looked like memory, but five memory fixes changed nothing.<span>Fix</span>Load order. Loaded after the camera, the model fell back to the CPU. Loaded first, it took 4.4 to 7 s.</p>
+            <p class="fix"><span>Problem</span>Memory looked like the cause, but the real issue was elsewhere.<span>Fix</span>Load order. Loaded after the camera, the model fell back to the CPU. Loaded first, it took 4.4 to 7 s.</p>
             <p class="fix"><span>Decision</span>No language model at runtime: too slow, too close to 8 GB. It only suggests training labels offline.</p>
           </details>
         </div>
@@ -637,7 +637,7 @@
               <li>All clothes go to the laundry basket, so a sock/towel mix-up costs nothing</li>
             </ul>
             <p class="fix"><span>Rule</span>Never target clothes someone is wearing.<span>How</span>A person mask runs on every frame, and anything 30 % on a person is ignored (about 15 FPS with it).</p>
-            <p class="fix"><span>Result</span>Finds a sock the earlier models missed, but still misses toys from the low camera.<span>Next</span>Fine-tune on 93 frames from the robot's own camera.</p>
+            <p class="fix"><span>Result</span>It finds socks that the off-the-shelf models could not name.<span>Next</span>Training continues on frames from the robot's own camera until it reaches the accuracy I want.</p>
           </details>
         </div>
       </article>
